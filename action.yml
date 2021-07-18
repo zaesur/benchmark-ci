@@ -1,0 +1,14 @@
+name: 'Benchmark CI'
+description: ''
+
+inputs:
+  benchmarks-directory:
+    description: 'Path to the folder of benchmarks'
+    required: true
+  threshold:
+    description: 'A percentage that defines the threshold for performance regressions.'
+    required: true
+
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
