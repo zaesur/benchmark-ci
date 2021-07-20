@@ -6231,6 +6231,7 @@ exports.pick = pick;
 /***/ 3248:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+const fs = __nccwpck_require__(5747);
 const path = __nccwpck_require__(5622);
 const { readDirectory, readJSON } = __nccwpck_require__(1608);
 
@@ -6240,6 +6241,11 @@ const getBenchmarks = async directoryName => {
     const promises = filenames.map(filename => readJSON(path.join(directoryPath, filename)));
     return Promise.all(promises);
 };
+
+const getBenchmark = async (directory, hash) => {
+    const file = `${directory}/result-${hash}.json`
+    return readJSON(file);
+}
 
 const parseBenchmarks = files => files
     .flat()
@@ -6251,23 +6257,9 @@ const parseBenchmarks = files => files
     }, {});
 
 module.exports = {
+    getBenchmark,
     getBenchmarks,
     parseBenchmarks
-};
-
-/***/ }),
-
-/***/ 7341:
-/***/ ((module) => {
-
-const trendDetection = benchmark => {
-    const add = (a, b) => a + b;
-    const [ mc, ...M ] = benchmark.metrics;
-    return M.length > 0 ? M.map(mb => 100 * mc.score * M.length / mb.score).reduce(add, 0) - 100 : 0;
-};
-
-module.exports = {
-    trendDetection
 };
 
 /***/ }),
@@ -6387,26 +6379,13 @@ var __webpack_exports__ = {};
 (() => {
 const git = __nccwpck_require__(1477);
 const core = __nccwpck_require__(2186);
-const { getBenchmarks, parseBenchmarks } = __nccwpck_require__(3248);
-const { trendDetection } = __nccwpck_require__(7341);
+const { getBenchmark } = __nccwpck_require__(3248);
 
 (async () => {
     try {
-        const directoryName = core.getInput('benchmarks-directory');
-        const threshold = core.getInput('threshold');
-
-        const files = await getBenchmarks(directoryName);
-        const parsed = await parseBenchmarks(files);
-
         const log = await git().log();
-        console.log(log);
-
-        for (const [name, benchmark] of Object.entries(parsed)) {
-            const result = trendDetection(benchmark);
-            if (result > threshold) {
-                core.setFailed(`Benchmark ${name} failed. Performance declined ${result.toFixed(2)} percent.`);
-            }
-        }
+        const hashes = log.map(({ hash }) => hash);
+        console.log(hashes);
     } catch (error) {   
         core.setFailed(error.message);
     }
