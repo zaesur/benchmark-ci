@@ -2,7 +2,7 @@ name: 'Benchmark CI'
 description: ''
 
 inputs:
-  benchmarks-directory:
+  directory:
     description: 'Path to the folder of benchmarks'
     required: true
   threshold:
