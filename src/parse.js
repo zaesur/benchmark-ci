@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const { readDirectory, readJSON } = require('./utils');
 
@@ -7,6 +8,11 @@ const getBenchmarks = async directoryName => {
     const promises = filenames.map(filename => readJSON(path.join(directoryPath, filename)));
     return Promise.all(promises);
 };
+
+const getBenchmark = async (directory, hash) => {
+    const file = `${directory}/result-${hash}.json`
+    return readJSON(file);
+}
 
 const parseBenchmarks = files => files
     .flat()
@@ -18,6 +24,7 @@ const parseBenchmarks = files => files
     }, {});
 
 module.exports = {
+    getBenchmark,
     getBenchmarks,
     parseBenchmarks
 };
