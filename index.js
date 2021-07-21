@@ -1,16 +1,23 @@
-const git = require('simple-git');
+const Git = require('simple-git');
 const core = require('@actions/core');
-const glob = require('glob-promise');
 
 (async () => {
     try {
-        const directory = core.getInput('directory')
+        const git = Git();
 
-        const log = await git().log();
-        const filePromises = log.all.map(({ hash }) => glob(`${directory}/*${hash}*.json`));
-        const files = (await Promise.all(filePromises)).map(([result]) => result);
-        
-        console.log(files);
+        // Get log.
+        (async () => {
+            const log = await git.log();
+            console.log(log.all.length);
+        })();
+
+        // Save results.
+        (async () => {
+            git.checkout('results');
+            const log = await git.log();
+            console.log(log.all.length);
+        })();
+
     } catch (error) {   
         core.setFailed(error.message);
     }
