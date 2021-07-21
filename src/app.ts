@@ -7,9 +7,8 @@ class App {
 
   constructor(controllers: Controller[] = []) {
     this.app = express();
-
+    this.initializeMiddlewares();
     this.initializeControllers(controllers);
-    this.initializeNotFound();
     this.initializeErrorHandling();
   }
 
@@ -19,14 +18,14 @@ class App {
     });
   }
 
-  private initializeControllers(controllers: Controller[]) {
-    controllers.forEach((controller) => {
-      this.app.use("/api", controller.router);
-    });
+  private initializeMiddlewares() {
+    this.app.use(express.json());
   }
 
-  private initializeNotFound() {
-    this.app.use("/", (req, res) => res.sendStatus(404));
+  private initializeControllers(controllers: Controller[]) {
+    controllers.forEach((controller) => {
+      this.app.use("/", controller.router);
+    });
   }
 
   private initializeErrorHandling() {

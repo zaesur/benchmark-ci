@@ -1,5 +1,5 @@
 interface Benchmark {
   name: string;
-  timings: number[];
+  score: number;
   parameters: Record<any, any>;
 }
