@@ -1,12 +1,6 @@
-import express from "express";
+import App from "./app";
+import BenchmarkController from "./controllers/benchmark.controller";
 
-const app = express();
-const port = 8080;
+const app = new App([new BenchmarkController()]);
 
-app.get("/", (req, res) => {
-  res.send("Hello world!");
-});
-
-app.listen(port, () => {
-  console.log(`server started at http://localhost:${port}`);
-});
+app.listen(8080);
