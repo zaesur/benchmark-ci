@@ -14,6 +14,10 @@ const redis = new RedisClient({
     password: process.env.REDIS_PASSWORD
 });
 
+redis.on("connect", () => {
+    console.log("Established connection with Redis");
+});
+
 const benchmarkService = new BenchmarkService(redis);
 
 const app = new App([
