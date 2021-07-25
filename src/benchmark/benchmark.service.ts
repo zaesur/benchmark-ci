@@ -18,7 +18,7 @@ class BenchmarkService {
         return getAsync("benchmarks", hash).then(value => JSON.parse(value));
     }
 
-    getAll(): Promise<any> {
+    getAll(): Promise<Benchmark[]> {
         const getAllAsync: (collection: string) => Promise<Record<string, string>> = promisify(this.redis.hgetall).bind(this.redis);
         return getAllAsync("benchmarks").then(Object.values).then(values => values.map(value => JSON.parse(value)));
     }

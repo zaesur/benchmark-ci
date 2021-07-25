@@ -1,7 +1,7 @@
 import { ErrorRequestHandler } from "express";
 import { HttpError }  from "http-errors";
 
-const errorMiddleware: ErrorRequestHandler = (error, _request, response, _next): void => {
+const errorMiddleware: ErrorRequestHandler = (error, _request, response, _next) => {
   console.error(error.message);
 
   if (error instanceof HttpError) {
