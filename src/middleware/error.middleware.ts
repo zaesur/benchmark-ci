@@ -1,12 +1,7 @@
-import { NextFunction, Request, Response } from "express";
+import { ErrorRequestHandler } from "express";
 import { HttpError }  from "http-errors";
 
-const errorMiddleware = (
-  error: Error | HttpError,
-  request: Request,
-  response: Response,
-  next: NextFunction
-): void => {
+const errorMiddleware: ErrorRequestHandler = (error, _request, response, _next): void => {
   console.error(error.message);
 
   if (error instanceof HttpError) {
