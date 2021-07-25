@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { HttpError } from "http-errors";
+import { HttpError }  from "http-errors";
 
 const errorMiddleware = (
   error: Error | HttpError,
@@ -7,11 +7,12 @@ const errorMiddleware = (
   response: Response,
   next: NextFunction
 ): void => {
+  console.error(error.message);
+
   if (error instanceof HttpError) {
     const { status, message } = error;
-    response.status(status).send({ status, message, })
+    response.status(status).send({ status, message, });
   } else {
-    console.log(error.message, '\n', error.stack);
     response.sendStatus(500);
   }
 };
