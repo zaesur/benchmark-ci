@@ -24,4 +24,4 @@ const app = new App([
     new BenchmarkController(benchmarkService),
 ]);
 
-app.listen(process.env.PORT);
+app.listen(parseInt(process.env.PORT, 10));
