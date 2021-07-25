@@ -24,4 +24,4 @@ const app = new App([
     new BenchmarkController(benchmarkService),
 ]);
 
-app.listen(8080);
+app.listen(process.env.PORT);
