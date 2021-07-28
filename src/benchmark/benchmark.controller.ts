@@ -1,35 +1,17 @@
 import { Router, RequestHandler } from "express";
 import { BadRequest, NotFound } from "http-errors";
-import _ from "lodash";
-import { trendDetection } from "../statistics/trenddetection";
 import { Controller } from "../types/controller";
-import BenchmarkModel from "./benchmark.service";
-
-type AddJMHRequest = {
-  benchmark: string,
-  params?: Record<string, any>
-  primaryMetric: {
-    score: number
-  }
-}[];
-
-type CompareRequest = {
-  threshold: number,
-  current: Hash,
-  history: Hash[]
-}
-
-const findAssociatedRun = (run: Run, runs: Run[]): Run | undefined => {
-  return runs.find(other => run.name === other.name && _.isEqual(run.parameters, other.parameters));
-}
+import { parseJMH } from "./benchmark.parse";
+import BenchmarkService from "./benchmark.service";
+import { analyzeBenchmarks } from "./benchmark.util";
 
 class BenchmarkController implements Controller {
   public path = "/api/benchmarks";
   public router = Router();
-  private benchmarkModel: BenchmarkModel;
+  private benchmarkService: BenchmarkService;
 
-  constructor(benchmarkModel: BenchmarkModel) {
-    this.benchmarkModel = benchmarkModel;
+  constructor(benchmarkService: BenchmarkService) {
+    this.benchmarkService = benchmarkService;
     this.initializeRoutes();
   }
 
@@ -43,7 +25,7 @@ class BenchmarkController implements Controller {
 
   private getAll: RequestHandler = async (_request, response, next) => {
     try {
-      const benchmarks = await this.benchmarkModel.getAll();
+      const benchmarks = await this.benchmarkService.getAll();
       response.send(benchmarks);
     } catch (error) {
       next(new BadRequest(error.message));
@@ -53,7 +35,7 @@ class BenchmarkController implements Controller {
   private getBenchmark: RequestHandler = async (request, response, next) => {
     try {
       const hash = request.params.hash as Hash;
-      const benchmark: Benchmark = await this.benchmarkModel.get(hash);
+      const benchmark: Benchmark = await this.benchmarkService.get(hash);
       response.send(benchmark);
     } catch (error) {
       next(new NotFound(error.message));
@@ -62,10 +44,8 @@ class BenchmarkController implements Controller {
 
   private addBenchmark: RequestHandler = async (request, response, next) => {
     try {
-      const hash = request.params.hash as Hash;
-      const body = request.body as AddJMHRequest;
-      const runs = body.map(({ benchmark: name, params: parameters, primaryMetric: { score } }) => ({ name, parameters, score }));
-      await this.benchmarkModel.create({ hash, runs });
+      const benchmark = parseJMH(request.params.hash, request.body);
+      await this.benchmarkService.create(benchmark);
       response.sendStatus(201);
     } catch (error) {
       next(new BadRequest(error.message));
@@ -75,7 +55,7 @@ class BenchmarkController implements Controller {
   private deleteBenchmark: RequestHandler = async (request, response, next) => {
     try {
       const hash = request.params.hash as Hash;
-      await this.benchmarkModel.delete(hash);
+      await this.benchmarkService.delete(hash);
       response.sendStatus(204);
     } catch (error) {
       next(new BadRequest(error.message));
@@ -84,22 +64,13 @@ class BenchmarkController implements Controller {
 
   private compareBenchmarks: RequestHandler = async (request, response, next) => {
     try {
-      const body = request.body as CompareRequest;
+      const body = request.body;
       const [current, ...history] = await Promise.all([
         body.current,
         ...body.history
-      ].map(hash => this.benchmarkModel.get(hash)));
+      ].map(hash => this.benchmarkService.get(hash)));
 
-      const results = current.runs.map(run => {
-        const associatedRuns = history.map(benchmark => findAssociatedRun(run, benchmark.runs));
-        const associatedScores = associatedRuns.filter(_.negate(_.isUndefined)).map(associated => associated.score);
-
-        return {
-          name: run.name,
-          parameters: run.parameters,
-          score: associatedScores.length > 0 ? trendDetection(run.score, associatedScores) : Number.NEGATIVE_INFINITY
-        };
-      });
+      const results = analyzeBenchmarks(current, history);
 
       const payload = {
         success: results.every(result => result.score < body.threshold),
