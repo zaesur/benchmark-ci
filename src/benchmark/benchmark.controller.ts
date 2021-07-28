@@ -69,14 +69,8 @@ class BenchmarkController implements Controller {
         body.current,
         ...body.history
       ].map(hash => this.benchmarkService.get(hash)));
-
-      const results = analyzeBenchmarks(current, history);
-
-      const payload = {
-        success: results.every(result => result.score < body.threshold),
-        results
-      };
-
+      const payload = analyzeBenchmarks(current, history, body.threshold);
+      
       response.send(payload);
     } catch (error) {
       next(new BadRequest(error.message));
