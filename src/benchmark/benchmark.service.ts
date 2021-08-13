@@ -1,5 +1,6 @@
 import { RedisClient } from "redis";
 import { promisify } from "util";
+import { BenchmarkMap } from "./benchmark.parse";
 
 class BenchmarkService {
     private redis: RedisClient;
@@ -10,17 +11,17 @@ class BenchmarkService {
 
     create(benchmark: Benchmark): Promise<boolean> {
         const setAsync: (collection: string, record: Record<string, string>) => Promise<boolean> = promisify(this.redis.hmset).bind(this.redis);
-        return setAsync("benchmarks", { [benchmark.hash]: JSON.stringify(benchmark) });
+        return setAsync("benchmarks", { [benchmark.hash]: BenchmarkMap.BenchmarkToString(benchmark) });
     }
 
     get(hash: Hash): Promise<Benchmark> {
         const getAsync: (collection: string, key: string) => Promise<string> = promisify(this.redis.hget).bind(this.redis);
-        return getAsync("benchmarks", hash).then(value => JSON.parse(value));
+        return getAsync("benchmarks", hash).then(BenchmarkMap.StringToBenchmark);
     }
 
     getAll(): Promise<Benchmark[]> {
         const getAllAsync: (collection: string) => Promise<Record<string, string>> = promisify(this.redis.hgetall).bind(this.redis);
-        return getAllAsync("benchmarks").then(Object.values).then(values => values.map(value => JSON.parse(value)));
+        return getAllAsync("benchmarks").then(Object.values).then(values => values.map(BenchmarkMap.StringToBenchmark));
     }
 
     delete(hash: Hash): Promise<boolean> {

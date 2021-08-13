@@ -1,7 +1,7 @@
 import { Router, RequestHandler } from "express";
 import { BadRequest, NotFound } from "http-errors";
 import { Controller } from "../types/controller";
-import { parseJMH } from "./benchmark.parse";
+import { BenchmarkMap } from "./benchmark.parse";
 import BenchmarkService from "./benchmark.service";
 import { analyzeBenchmarks } from "./benchmark.util";
 
@@ -44,7 +44,7 @@ class BenchmarkController implements Controller {
 
   private addBenchmark: RequestHandler = async (request, response, next) => {
     try {
-      const benchmark = parseJMH(request.params.hash, request.body);
+      const benchmark = BenchmarkMap.JMHToBenchmark(request.params.hash, request.body);
       await this.benchmarkService.create(benchmark);
       response.sendStatus(201);
     } catch (error) {
