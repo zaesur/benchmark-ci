@@ -1,7 +1,7 @@
 import { Router, RequestHandler } from "express";
 import { BadRequest, NotFound } from "http-errors";
 import { Controller } from "../types/controller";
-import { BenchmarkMap } from "./benchmark.parse";
+import { BenchmarkMap } from "./benchmark.map";
 import BenchmarkService from "./benchmark.service";
 import { analyzeBenchmarks } from "./benchmark.util";
 

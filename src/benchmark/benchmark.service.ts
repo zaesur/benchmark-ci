@@ -1,6 +1,6 @@
 import { RedisClient } from "redis";
 import { promisify } from "util";
-import { BenchmarkMap } from "./benchmark.parse";
+import { BenchmarkMap } from "./benchmark.map";
 
 class BenchmarkService {
     private redis: RedisClient;
